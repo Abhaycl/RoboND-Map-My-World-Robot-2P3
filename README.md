@@ -61,7 +61,28 @@ roslaunch slam_bot world.launch world_name:=kitchen_dining.world
 roslaunch slam_bot teleop.launch
 roslaunch slam_bot mapping.launch
 ```
-Dependencias del sistema que se encuentran con las convenciones de CMake
+
+#### Commands to be executed for the test section
+
+To generate the robot transform tree frames, you have to execute the following command:
+```bash
+rosrun tf view_frames
+```
+
+To use the database created by the Kitchen World you have to copy the .db file below:
+```bash
+cp /home/workspace/catkin_ws/src/slam_bot/db/kitchen/rtabmap.db ~/.ros
+```
+To use the database created by the Custom World you have to copy the .db file below:
+```bash
+cp /home/workspace/catkin_ws/src/slam_bot/db/custom/rtabmap.db ~/.ros
+```
+
+Execute the following command to explore the database:
+```bash
+rtabmap-databaseViewer ~/.ros/rtabmap.db
+```
+
 
 ---
 
@@ -79,8 +100,8 @@ The summary of the files and folders within repo is provided in the table below:
 | misc_images/*             | Folder containing the images of the project.                                                                 |
 |                           |                                                                                                              |
 | CMakeLists.txt            | Contains the System dependencies that are found with CMake's conventions.                                    |
-| frames.gv                 | Contains the project documentation.                                                                          |
-| frames.pdf                | Contains the project documentation.                                                                          |
+| frames.gv                 | Contains the robot transform tree frames.                                                                    |
+| frames.pdf                | Contains the robot transform tree frames in PDF format.                                                      |
 | package.xml               | Contains the slam_bot package.                                                                               |
 | README.md                 | Contains the project documentation.                                                                          |
 | README.pdf                | Contains the project documentation in PDF format.                                                            |
@@ -147,8 +168,6 @@ There are numerous challenges for SLAM algorithms to address. As with any roboti
 ### Robot Model
 
 The robot used for this project It's new build to solve the localization problem in a previous project, which has a cylindrical shape, with two cylindrical wheels, and to spherical casters. This robot has been repurposed to perform SLAM by changing its regular RGB camera for an RGB-D sensor camera, which allows it to detect the depth of its environment. This, along with its existing 2D laser rangefinder (Hokuyo) sensor, allows the robot ROS package slambot to leverage the rtabmap-ros package to perform SLAM.
-
-During development of the mapping project, it became apparent that the RGB-D camera frame required rotation and translation to properly re-orient the measured point cloud axes for mapping purposes. To accomplish this, a specific transform node was created in the ”robot description.launch” file.
 
 ![alt text][image1]
 ###### Custom Robot
