@@ -1,61 +1,88 @@
-# Where Am I Project Starter Code
+# Map My World Robot Project Starter Code
 
-The objective of this project is to learn how to utilize ROS packages to accurately localize a mobile robot inside a provided map in the Gazebo and RViz simulation environments.
+The objective of this project is to create a 2D occupancy grid and 3D octomap from a provided simulated environment. In addition, a simulated environment will be created to map as well.
 
 <!--more-->
 
 [//]: # (Image References)
 
-[image1]: ./misc_images/kalman_filtering.jpg "Kalman filters"
-[image2]: ./misc_images/kalman_gain.jpg "Multidimensional Kalman filters"
-[image3]: ./misc_images/gaussian.jpg "Gaussian"
-[image4]: ./misc_images/formula.jpg "Formula"
-[image5]: ./misc_images/linear.jpg "Linear Approximation"
-[image6]: ./misc_images/step_0.jpg "MCL Step 0"
-[image7]: ./misc_images/step_1.jpg "MCL Step 1"
-[image8]: ./misc_images/step_2.jpg "MCL Step 2"
-[image9]: ./misc_images/step_3.jpg "MCL Step 3"
-[image10]: ./misc_images/step_4.jpg "MCL Step 4"
-[image11]: ./misc_images/step_5.jpg "MCL Step 5"
-[image12]: ./misc_images/bot_udacity.jpg "Udacity Robot"
-[image13]: ./misc_images/bot_me.jpg "Custom Robot"
-[image14]: ./misc_images/robot_setup.jpg "Robot Setup"
-[image15]: ./misc_images/costmap.jpg "Large Costmap"
-[image16]: ./misc_images/costmap_smaller.jpg "Smaller Costmap"
-[image17]: ./misc_images/cost.jpg "Cost Added"
-[image18]: ./misc_images/low_tolerance.jpg "Low Tolerance"
-[image19]: ./misc_images/rviz_start.jpg "Robot - Rviz Start"
-[image20]: ./misc_images/gazebo_start.jpg "Robot - Gazebo Start"
-[image21]: ./misc_images/rviz_moving.jpg "Robot - Rviz Moving"
-[image22]: ./misc_images/gazebo_moving.jpg "Robot - Gazebo Moving"
-[image23]: ./misc_images/rviz_finish.jpg "Robot - Rviz Finish"
-[image24]: ./misc_images/gazebo_finish.jpg "Robot - Gazebo Finish"
-[image25]: ./misc_images/orientation_particles.jpg "Orientation Particles"
-[image26]: ./misc_images/goal.jpg "Reached the Goal Position"
-[image27]: ./misc_images/robot_reached_goal.jpg "Time Reached the Goal Position"
+[image1]: ./misc_images/bot_slam.jpg "Custom Bot"
+[image2]: ./misc_images/frames.jpg "Robot TF Frames"
+[image3]: ./misc_images/kitchen_scene.jpg "Kitchen World Scene"
+[image4]: ./misc_images/custom_scene.jpg "Custom World Scene"
+[image5]: ./misc_images/kitchen_slam.jpg "SLAM Mapped"
+[image6]: ./misc_images/kitchen_rtabmap.jpg "Rtabmap"
+[image7]: ./misc_images/custom_slam.jpg "Custom SLAM"
+[image8]: ./misc_images/custom_rtabmap.jpg "Rtabmap"
 
 ---
 
 
 #### How to run the program with your own code
 
-For the execution of your own code, we head to the Project Workspace
+Go to Desktop and open a terminal.
 
-Go to Desktop
+For the execution of your own code, we head to the Project Workspace. For this setup, catkin_ws is the name of the active ROS workspace. If your workspace name is different, change the commands accordingly.
 
-You can launch it by running the following commands first
+If you do not have an active ROS workspace, you can create one. You can launch it by running the following commands first.
+```bash
+  cd /home/workspace
+  mkdir -p catkin_ws/src
+  cd /home/workspace/catkin_ws
+  catkin_make
+  source devel/setup.bas
+```
+
+Clone the required repositories to the `/home/workspace/catkin_ws/src` folder
+```bash
+  cd /home/workspace/catkin_ws/src
+  git clone https://github.com/Abhaycl/RoboND-Map-My-World-Robot-2P3.git
+```
+
+Now install missing dependencies using rosdep install:
+```bash
+  rosdep install -i slam_bot
+```
+
+Build the project:
 ```bash
   cd /home/workspace/catkin_ws
   catkin_make
-  source devel/setup.bash
 ```
 
-And then run the following in separate terminals
+Download the proper kitchen dining room `*.world` file that includes collision models required to map properly:
 ```bash
-  roslaunch udacity_bot udacity_bot
-  roslaunch udacity_bot amcl
-  rosrun udacity_bot navigation goal
+curl -L https://s3-us-west-1.amazonaws.com/udacity-robotics/Term+2+Resources/P3+Resources/models.tar.gz | tar zx -C ~/.gazebo/
 ```
+
+Open three terminals to the `/home/workspace/catkin_ws/src/slam_bot/launch` folder and run each command in one terminal:
+```bash
+  roslaunch slam_bot world.launch world_name:=kitchen_dining.world
+  roslaunch slam_bot teleop.launch
+  roslaunch slam_bot mapping.launch
+```
+
+#### Commands to be executed for the test section
+
+To generate the robot transform tree frames, you have to execute the following command:
+```bash
+  rosrun tf view_frames
+```
+
+To use the database created by the Kitchen World you have to copy the .db file below:
+```bash
+  cp /home/workspace/catkin_ws/src/slam_bot/db/kitchen/rtabmap.db ~/.ros
+```
+To use the database created by the Custom World you have to copy the .db file below:
+```bash
+  cp /home/workspace/catkin_ws/src/slam_bot/db/custom/rtabmap.db ~/.ros
+```
+
+Execute the following command to explore the database:
+```bash
+  rtabmap-databaseViewer ~/.ros/rtabmap.db
+```
+
 
 ---
 
@@ -63,252 +90,160 @@ The summary of the files and folders within repo is provided in the table below:
 
 | File/Folder               | Definition                                                                                                   |
 | :------------------------ | :----------------------------------------------------------------------------------------------------------- |
-| config/*                  | Folder that contains all the parameters and some values defined for you to help you get started.             |
+| config/*                  | Folder that contains all the parameters and some values defined for you to help you get started rviz.        |
+| db/*                      | Folder that contains all the databases generated from the maps.                                              |
 | launch/*                  | Folder that contains all the launch files in ROS that allow us to execute more than one node simultaneously. |
-| maps/*                    | Folder that contains all the new environment using a map created by Clearpath Robotics.                      |
 | meshes/*                  | Folder that contains all the parameterization of the sensors.                                                |
-| src/*                     | Folder that contains all the project repo we have provided you with a C++ node that will navigate the robot to the goal position for you. |
+| scrips/*                  | Folder that contains all the scripts for the execution of the different necessary tools.                     |
 | urdf/*                    | Folder that contains all the robot's URDF description.                                                       |
 | worlds/*                  | Folder that contains all the Gazebo worlds.                                                                  |
 | misc_images/*             | Folder containing the images of the project.                                                                 |
 |                           |                                                                                                              |
+| CMakeLists.txt            | Contains the System dependencies that are found with CMake's conventions.                                    |
+| frames.gv                 | Contains the robot transform tree frames.                                                                    |
+| frames.pdf                | Contains the robot transform tree frames in PDF format.                                                      |
+| package.xml               | Contains the slam_bot package.                                                                               |
 | README.md                 | Contains the project documentation.                                                                          |
 | README.pdf                | Contains the project documentation in PDF format.                                                            |
-| package.xml               | Contains the udacity_bot package.                                                                            |
 
 ---
 
 **Steps to complete the project:**  
 
-1. Follow the steps outlined in this Project Lesson, to create your own ROS package, develop a mobile robot model for Gazebo, and integrate the AMCL and Navigation ROS packages for localizing the robot in the provided map.
-2. Using the Parameter Tuning section as the basis, add and tune parameters for your ROS packages to improve your localization results in the map provided. Feel free to explore new parameters using the resources provided earlier in the same section. Please include the image of RViz with the robot at goal position and the PoseArray displayed. Each run may take a long time so don't forget to screenshot your robot at the goal position.
-3. After achieving the desired results for the robot model introduced in the lesson, implement your own robot model with significant changes to the robot's base and possibly sensor locations.
-4. Check your previous parameter settings with your new robot model, and improve upon your localization results as required for this new robot.
-5. Document your work. You could use this Writeup Template. 
+1. You will develop your own package to interface with the rtabmap_ros package.
+2. You will build upon your localization project to make the necessary changes to interface the robot with RTAB-Map. An example of this is the addition of an RGB-D camera.
+3. You will ensure that all files are in the appropriate places, all links are properly connected, naming is properly setup and topics are correctly mapped. Furthermore you will need to generate the appropriate launch files to launch the robot and map its surrounding environment.
+4. When your robot is launched you will teleop around the room to generate a proper map of the environment. 
+5. You then will build your own simulated environment and apply the code you used to map the supplied environment on this environment.
+6. Finally you will create a report and organize the required files for submission. 
 
 
-## [Rubric Points](https://review.udacity.com/#!/rubrics/1365/view)
+## [Rubric Points](https://review.udacity.com/#!/rubrics/1441/view)
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
 
 ---
 ## Abstract
 
-Where Am I? The goal of this project is to configure a number of ROS packages that can be used in conjunction to accurately localize and navigate a mobile robot inside a provided map in the Gazebo and RViz simulation environments. A mobile robot model for Gazebo is developed to create the own ROS package with URDF, and the AMCL and Navigation ROS packages are integrated for localizing the robot in the provided map. The parameters are tuned for the ROS packages to improve the localization results in the map. Two different robot models, udacity robot and custom robot, are considered for performance evaluation. After achieving the desired results for udacity robot, custom robot is implemented with significant changes to the robot’s base and the sensor locations. The parameter settings with custom robot is checked, and the localization results are improved upon as required for custom robot.
+This project aims to successfully perform SLAM leverage GraphSLAM to generate 2D occupancy grids and 3D octomaps of two simulated environments in Gazebo. A two-wheel robot equipped with RGB-D and 2D Lidar sensors (configured as a camera and a Hokuyo lidar, respectively) was simulated to traverse two Gazebo world environments, one provided in this practice, and another that was custom built. The robot maps the environment using the "Real Time Appearance Based Mapping" (RTAB-Map) GraphSLAM approach. After the robot traversed both environments, maps were evaluated on accuracy.
 
 
 ## Introduction
 
-This project consists of creating a complete ROS package that includes a Gazebo world, a robot model in URDF and using the ROS navigation stack to localize the robot on the map as well as move it to a desired destination and pose avoiding any obstacles on the way. There are several aspects of robotics to learn about with a focus on ROS. Those includes building a mobile robot for simulated task, creating a ROS package that launches a custom robot model in a gazebo world and utilizes packages like AMCL and the navigation stack, exploring, adding, and tuning specific parameters corresponding to each package to archive the best localization results.
+For a robot to be fully autonomous it must adapt and understand its environment as it changes and be able to recover when it obtains noisy data from sensors. Simultaneous Localization and Mapping (SLAM) provides a robot with the capability to dynamically map its environment as it relates to it. When implemented correctly, SLAM solves the localization problem to map the environment, and maps the environment to solve the localization problem. This is all done as an iterative cycle.
 
-Robots often operates in unpredictable environments where the agent is uncertain about its state. Using calculus and probability theory it is possible to manage this uncertainty and represent the robots beliefs of its state in mathematical form that can later be used for decision making.
-
-For a robot to find its position on a map (localization problem) it needs to filter noisy sensor data using probabilistic methods. There are 3 types of localization problems:
-
-#### 1. Position tracking
-
-This is the first and simplest form of the localization problem: in this scenario the robots initial position is known and the algorithm keeps track of the robot's position as it moves.
-
-#### 2. Global localization
-
-For cases where the initial position is unknown and needs to be determined at as the robot moves. This problem combines the uncertainties from measurements and actions in a cycle to achieve a precise estimate of the location.
-
-#### 3. Kidnaped robot
-
-The most difficult localization problem is to recover from abrupt changes in position like moving a robot from a position on the map to another. This is particularly difficult for bayesian algorithms to recover from since they preserve an internal belief that interfere with the new robot state.
-
-In the real world, it has to be considered whether environment is static meaning unchanging, or dynamic where objects may shift over time. In dynamic environments are more challenging to localize.
+In this project, two 3D world environments are to be simulated, tested, and mapped using SLAM. The environment provided, and set to be the benchmark, is called kitchen dining. Another environment shall be designed and developed in Gazebo and saved in world format; this one is called my world. The two environments shall be mapped in both 2D and 3D by using Gazebo and Rviz simulation frameworks.
 
 
 ## Background / Formulation
 
-In the course program we were introduced to two methods of location: Kalman filters and particle filters. Both probabilistic methods can be successfully applied to position tracking and global location and will later help locate my robot in Gazebo and RViz.​
+Given that a map is needed for localization, but at the same time the robots location and orientation is needed for mapping, this has often been considered the chicken or the egg problem. SLAM is a challenging problem, as it has to quickly solve two related problems simultaneously and back-to-back. There are many approaches to perform SLAM such as:
 
-### Kalman filters
+* Extended Kalman Filter SLAM (EKF)
+* Sparse Extended Information Filter (SEIF)
+* Extended Information Form (EIF)
+* FastSLAM
+* GraphSLAM
 
-The Kalman filter estimates the value of a variable by updating its estimate as measurement data is collected filtering out the noise. Kalman Filters models the state uncertainty using Gaussians and it is capable of making accurate estimates with just a few data points.
+The two most commonly used approaches in robotics are FastSLAM and GraphSLAM. Both of these, solve the SLAM problem well, although in different ways.​
 
-KF starts with an initial state estimate then performs the following cycle: measurement update produced by sensor measurements followed by a state prediction from control actions.
+### FastSLAM
+
+The FastSLAM algorithm can solve the full SLAM problem with known correspondences. Using a custom particle filter approach along with a low dimensional Extended Kalman Filter, FastSLAM is able to estimate the trajectory of the robot which will allow it to map the environment concurrently.
+
+
+### GraphSLAM
+
+GraphSLAM is a SLAM algorithm that solves the Full SLAM Problem. This algorithm recovers the entire path and map, which allows it to consider dependencies between current and previous poses. GraphSLAM has a few advantages over FastSLAM. GraphSLAM improves upon the need of onboard processing capability, while still improving accuracy over FastSLAM. Since GraphSLAM is able to retain information from past locations, it proves an advantage over FastSLAM which uses less information and has a finite number of particles.
+
+
+### RTAB-Mapping
+
+The Real Time Appearance Based Mapping algorithm is a GraphSLAM approach and will be used in this project to perform SLAM. This algorithm uses data collected from sensors to localize the robot and map the environment. In RTAB-Map a process called loop closure is used to allow the robot to determine if the location has been observed before. While the robot continues to traverse through its environment the map continues to grow. For other Appearance-Based methods, the robot continues to compare new images to past images to identify whether it has been at that location before. This, over time, increases the number of images for comparison, causing the loop closure process to take longer, proportionally increasing complexity along the way. However, RTAB-Map is optimized for large-scale and long-term SLAM, allowing loop closure to be processed fast enough to be known in real-time without dramatically affecting performance.
+
+There are numerous challenges for SLAM algorithms to address. As with any robotics application, large amounts of noise may introduce irreparable error into the algorithm. Specifically for SLAM applications, algorithms will tend to have difficulty with large environments that have multiple areas that appear similar. These produce incorrect consolidations of the created map. Proper tuning of algorithm parameters will mitigate this issue.Additionally, some algorithms may reach memory management issues. This is more prevalent in larger environments. The required memory to accurately map the environment may become costly for the algorithm to maintain. This issue can be addressed architecturally by selecting the most suited SLAM method for the robot and environment. Environments with unique landmarks and smaller spaces are mapped more easily.
+
+
+## Scene and robot configurations
+
+### Robot Model
+
+The robot used for this project It's new build to solve the localization problem in a previous project, which has a cylindrical shape, with two cylindrical wheels, and to spherical casters. This robot has been repurposed to perform SLAM by changing its regular RGB camera for an RGB-D sensor camera, which allows it to detect the depth of its environment. This, along with its existing 2D laser rangefinder (Hokuyo) sensor, allows the robot ROS package slambot to leverage the rtabmap-ros package to perform SLAM.
 
 ![alt text][image1]
+###### Custom Robot
 
+Since manual mapping is to be performed the slam-bot package communicates with a teleop package that allows the user to move and steer the robot.
 
-### Multidimensional KF
-
-Most of real world robots operates on multiple dimensions, i.e. a drone's position is defined by x, y and z coordinates and orientation in roll, pitch and yaw angles. This motivates generalizing the KF to multiple dimensions with equations in matrix format.
-
-The MKF algorithm consists of calculating the Kalman Gain K that determines how much weight should be placed on the state prediction, and how much on the measurement update. It is an averaging factor that changes depending on the uncertainty of the measurement and state updates.
+The backend configuration of the robot can be better appreciated in the Transform tree.
 
 ![alt text][image2]
-###### The Kalman gain K averages the measurement update P and motion update x
+###### Robot TF Frames
 
 
-### Extended Kalman Filter
+### Scene Configuration
 
-Kalman Filter assumes that motion and measurement models are linear and that the state space can be represented by a unimodal Gaussian distribution. Most mobile robots will execute non linear motion like following a curve. Non linear actions will result in non-Gaussian posterior distributions that cannot be properly modeled by a closed form equation.
+In order for the robot to perform SLAM, it must have a World to perform it in. For this reason, two environments will be used to test and simulate a robot performing SLAM and to generate 2D and 3D maps from them.
+
+#### Kitchen and Dining Scene
+
+The Kitchen and Dining Scene world was provided and will be used as a benchmark for experimentation purposes in the image below.
 
 ![alt text][image3]
-###### Gaussian prior (left) subject to a non-linear action (atan(x) — center) results in a non-Gaussian posterior (right)
+###### Kitchen and Dining Scene
 
-EKF approximates motion and measurements to linear functions locally (i.e. by using the first two terms of a Taylor series) to compute a best Gaussian approximation of the posterior covariance. This trick allows EKF to be applied efficiently to a non-linear problems.
+#### My Custom World Scene
 
-   y = z − Hx′
-
-is replaced with the nonlinear h(x'):
-
-   y = z — h(x’)
-
-This is where the multivariate Taylor series comes into play. The function function h(x) can be approximated by a Taylor series centered about the mean μ, as defined below.
+The my custom world scene was designed in Gazebo to be used as the experimental environment to deploy a robot for performing SLAM. This scene was developed with the RTAB-Map Appearance Based feature in mind. Therefore, this scene is dramatically feature-rich to help the robot easily identify where it is based on appearance, and map the environment more accurately. This scene includes a tables, boxes, closet and even floor colors that allow the robot to detect more features.
 
 ![alt text][image4]
-
-The h(x) approximation above is now linear around μ and will produce a Gaussian posterior.
-
-![alt text][image5]
-###### Linear approximation (in purple) of the atan(x) function around x = 0
-
-
-### Particle filters
-
-Monte Carlo localization algorithm similar to Kalman Filters estimates the posterior distribution of a robot’s position and orientation based on sensory information but instead of using Gaussians it uses particles to model state.
-
-The algorithm is similar to KF where motion and sensor updates are calculated in a loop but MCL adds one additional step: a particle resampling process where particles with large importance weights (computed during sensor updates) survive while particles with low weights are ignored.
-
-In the MCL example below all particles are uniformly distributed initially. In the following update steps the particles that better match the predicted state survive resulting in a concentration of particles around the robot estimated location.
-
-![alt text][image6]
-![alt text][image7]
-![alt text][image8]
-![alt text][image9]
-![alt text][image10]
-![alt text][image11]
-###### MCL steps visualization — Particles (green/yellow) start uniformly distributed (step 0) and then concentrates around the ground truth (blue) (steps 1–5). Robot's sensors read distances to landmarks (red).
-
-MCL solves the local and global localization problems but similar to KF is not suitable for addressing the kidnaped robot problem.
-
-### Model Configuration
-
-First we started configuring the world and launch files by following the instructions in the classroom, then we proceed to model the 2 robots below. The first robot based off the classroom (left) and the second is a custom robot (left).
-
-![alt text][image12]
-![alt text][image13]
-###### Classroom robot (left) and custom robot (right).
-
-The custom robot has a differential actuation, just like the classroom robot, instead of 4 wheels of a regular car. So only 2 wheels are maintained to comply with the ROS navigation package hardware requirement.
-
-
-### Tuning Parameters
-
-Now it will be described the choice the parameters for each of the packages from the ROS navigation stack. The next tutorial is a starting point as it provides an excellent overview of the parameters and packages discussed below.
-
-![alt text][image14]
-
-#### amcl.launch
-
-The only parameters that were needed for tweak in the AMCL launch file was the translational and rotational movement required before performing a filter update. The default values were too large for the slow moving robot. After reducing them by an order of magnitude, status updates were obtained far more frequently resulting in a reduction of the location uncertainty to a minimum.
-
-* update_min_d = 0.01
-* update_min_a = 0.005
-
-With the experiments it was discovered that very good results can be obtained with just 5–20 particles! The more particles the more accurate location will be but at the cost of additional compute resources. To keep the state updates as frequent as possible it's chosen to keep the particle count down to a minimum.
-
-* min_particles = 5
-* max_particles = 20
-
-Noisy readings from the laser sensor are also discovered. It would at times detect obstacles at short distances when there was nothing there. To prevent those readings to interfere with the localization, a minimum range of lasers is defined.
-
-* laser_min_range = 0.4
-
-Finally, the estimate of the initial pose is set to zero to coincide with the location of the robot at start-up.
-
-* initial_pose = (0, 0, 0)
-
-
-#### TrajectoryPlannerROS — base_local_planner_params.yaml
-
-The trajectory planner is responsible for computing velocity commands to send to the mobile base of the robot given a high-level plan. It seems useful to first understand what was going on under the planner's covers. Enabling the publish_cost_grid_pc parameter allows you to visualize the cost_cloud topic in RViz.
-
-* publish_cost_grid_pc: true
-
-![alt text][image15]
-###### A large costmap is heavily influenced by the navigation goal.
-
-It's detected that the robot was deviating too much from the global path as if attempting to head straight to the goal. Therefore, the following parameters are changed to reduce the goal influence (gdist_scale) and increasing the global path (pdist_scale) compliance.
-
-* pdist_scale: 1.0
-* gdist_scale: 0.4
-
-
-#### local_costmap_params.yaml
-
-The local costmap size was by far the most important parameters to get right to successfully navigate around the corner at the end of the corridor. This is because the goal creates a huge influence over the local costmap. This resulted in the robot getting pulled away from the calculated global path. Reducing the size of the local costmap to approximate to the corridor width solved this problem.
-
-* width: 5.0
-* height: 5.0
-
-![alt text][image16]
-###### A smaller costmap will produce a gradient along the global path that is not directly affected by the end goal.
-
-
-#### costmap_common_params.yaml
-
-The distance range is adjusted because the costmap should be updated based off the laser readings to either add or remove obstacles.
-
-* obstacle_range: 4.0
-* raytrace_range: 4.0
-
-To avoid having the robot bumping on the walls, a radius is defined that conformably fits the robot size. This parameters defines a padding that is added to obstacles. The navigation planer then takes the padding into account when calculating the global path.
-
-* inflation_radius: 0.6
-
-![alt text][image17]
-###### Cost added by the inflation radius to the global costmap acts as a padding around the walls.
-
-The parameters below depend exclusively on the performance of the VM on which the tests were performed. It defines the rate the costmaps should be calculated and published and for how long they are valid. These values have been decreased until no timeout warning messages are received.
-
-* transform_tolerance: 0.2
-* update_frequency: 5.0
-* publish_frequency: 2.0
-
-Finally, the tolerances of the goal have been lowered to get a very precise position and orientation when reaching the goal:
-
-* xy_goal_tolerance: 0.05
-* yaw_goal_tolerance: 0.01
-
-![alt text][image18]
-###### Low tolerances result in a precise final goal position and orientation.
-
-### Technical observations on the chosen times and parameters.
-
-If larger dimensions had been applied to the robot, it would have affected our travel times, perhaps in this particular case it would have been necessary to use more sensors to determine the position of the vehicle, but we have chosen a customized robot that has excellent dimensions with the appropriate sensors. Putting in 5 to 20 particles saves time in processing by requiring less hardware resources, in translation and rotation movements by reducing them were obtained more frequently status updates reducing the location of uncertainty to a minimum, To reduce the influence of the target (gdist_scale) and increase compliance with the global route (pdist_scale), the reduction in the size of the local cost map to approach the width of the corridor to follow the calculated global path is greatly influenced by the increase in the radius of the walls to prevent the robot from hitting the walls constantly. All these changes in the parameters allowed a reduction in the processing time giving the robot a certain precision in the fulfillment of the path so that the robot could reach the goal in the shortest time.
-
-![alt text][image27]
+###### Custom World Scene
 
 
 ## Results
 
-Both the classroom and custom robots performed similarly since they have similar mass, size and actuators. In the images below the robot navigate to the position provided by the nodenavigation_goal and it is possible to observe the AMCL particles converging quickly as soon as the robot starts moving. Thanks to the confident location estimate of the robot position, it successfully follows the global path completing the navigation with a precise final position and orientation to the goal.
+### Kitchen and Dining Scene 
 
-![alt text][image19]
-![alt text][image20]
-![alt text][image21]
-![alt text][image22]
-![alt text][image23]
-![alt text][image24]
-![alt text][image25]
-![alt text][image26]
+Upon launching the Kitchen and Dining scene simulation, and launching the mapping node, the slam-bot started mapping the environment in its immediate vicinity.
+
+After traversing and navigating around the entire world, the slam-bot was able to generate an accurate map of the world that was provided.
+
+As can be seen from the rtabmap database, several loop closures were observed, and bot a 2D occupancy grid map and a 3D octomap were generated for the provided environment.
+
+![alt text][image5]
+###### Kitchen slam mapping
+
+![alt text][image6]
+###### Kitchen Rtabmap
+
+
+### Custom World Scene
+
+Upon launching the my custom world scene simulation along with the mapping node the slam-bot started mapping the immediate environment.
+
+After navigating throughout the entire environment, the slam-bot was able to generate an accurate map of the world that was developed.
+
+As can be seen from the rtabmap database, several loop closures were observed, and bot a 2D occupancy grid map and a 3D octomap were generated for the custom developed environment.
+
+![alt text][image7]
+###### Custom slam mapping
+
+![alt text][image8]
+###### Custom Rtabmap
 
 
 ## Discussion
 
-The project took a long time, and a lot of help from the Slack channel, to discover that the local costmap size was such a critical parameter. Only after I've reduced it to a reasonable size that it became clear how the remaining parameters work. It was infuriating and embarrassing to see the robot doing the opposite of what was expected.
+Since it was a manual navigation, traversing through the two environment was rather tedious. Furthermore, making a close approaches to obstacles threw off the mapping process at times, and was difficult for the robot to recover afterwards. Although the Kitchen and Dining scene seemed to have less noticeable features that the my custom world scene, it was less complicated and faster to map that the latter. In order to map the my custom world scene, navigating around the objects that were placed to serve as both obstacles and features had to be done cautiously. Otherwise, if the robot got too close to objects, it would delocalize the robot, throwing off the mapping process. Whereas not getting close enough, would not allow the robot to map the entire my custom world scene accurately. One thing that was observed was that the laser range-finder had a lower range than necessary for the designed environment. While the Kitchen and Dining scene was more constrained, with solid objects and obstacles, the range-finder had solid surfaces to bounce off to detect distance accurately. However, the my custom world scene has more open space which seemed to have made the mapping slightly more complicated for the robot. Nonetheless, the robot was able to successfully map both environments accurately, solving the SLAM problem in the process.
 
-A second scenario was even more intriguing: after reducing gdist_scale in an attempt to reduce the goal influence over the local plan the robot would rotate in place when a goal was defined immediately across the wall, but would start moving immediately when the goal was moved somewhere else! Again the huge goal influence over the large local costmap was the reason for this surprising behavior.
+The performance of the robot’s mapping for each environment have a few similarities. Both were capable of clearly mapping 2D map boundaries, except for the unbounded section of the Kitchen Dining area. The robot was able to generate 3D maps of each world that were very recognizable of the actual environment. However, both struggled with 2D and 3D mapping the tables due to the height and angle of the camera and laser sensors.
 
-Also, it is important to point out that the robot would fail to localize when moved to a different location. As discussed previously this is due the fact AMCL is a bayesian algorithms that holds an internal belief of the world that is difficult to change in case of abrupt changes in the environment.
-
-One way to go about moving the robot from place to place would be to reset the AMCL internal state, back to a uniform distribution of particles, when placing the robot on a new location. This would reduce the kidnaped robot to a global localization problem (or "wake-up robot problem" in that context).
+The Kitchen Dining Area resulted in full, apparent walls while the custom world had sections missing. This is partially due to failing to scan the entire area methodically.
 
 
 ## Future Work
 
-This project was an excellent introduction to the ROS navigation stack. I would have to explore a variety of packages that process odometry and sensor streams and outputs velocity commands to send to a mobile base. This is a really useful tool that can be applied to all kinds of mobile robots.
+Possible future work includes developing a 4-wheeled robot equipped with the Jetson TX2 and a kinect RGBD camera sensor to map an entire real-life apartment. Possibly this would lead to building a custom Roomba robot to vacuum or somehow clean an apartment. With some improvements, this approach can be implemented in a drone for real estate aerial mapping; among other solutions that can be deployed for aerial or ground robotics.
+
+Mapping is a very valuable feature in many robotics applications, both autonomous and controlled. This can be used in surveillance drones to generate maps of areas of interest as they scan the area. The map can be used for any sort of strategic planning for the area. An autonomous robot can use mapping to learn how to navigate around an environment to complete its goal. This would be useful for a home assistance robot that may also implement pick-nplace perception to grab items the owner may need. These are only two valuable examples where mapping would be invaluable.
+
+A ROS package was generated and successfully performed 2D and 3D mapping using RTAB-Map. The robot was able to generate quality maps of the kitchen dining room and average maps of the custom world. However, there is still much room for improvement in this SLAM implementation. Further work is required to optimize the SLAM package to be more robust and reliable. Also, the robot may be expanded to perform more autonomous behavior. Newer configurations should be tested to attempt to address shortcomings noted in the Discussion section.
