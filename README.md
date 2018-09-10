@@ -1,6 +1,6 @@
 # Map My World Robot Project Starter Code
 
-The objective of this project is to create a 2D occupancy grid and 3D octomap from a provided simulated environment. In addition,, a simulated environment will be created to map as well.
+The objective of this project is to create a 2D occupancy grid and 3D octomap from a provided simulated environment. In addition, a simulated environment will be created to map as well.
 
 <!--more-->
 
